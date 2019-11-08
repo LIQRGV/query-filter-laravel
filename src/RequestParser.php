@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Config;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Struct\FilterStruct;
@@ -30,15 +31,26 @@ class RequestParser
      * @var array
      */
     private $modelNamespaces;
+    /**
+     * @var Request
+     */
+    private $request;
 
-    public function __construct(array $config)
+    public function __construct(Request $request)
     {
-        $this->modelNamespaces = $config['model_namespaces'] ?? ["App\\Models"];
+        $requestParserConfig = Config::get('request_parser');
+        if(is_null($requestParserConfig)) {
+            $this->modelNamespaces = ["App\\Models"];
+        } else {
+            $this->modelNamespaces = $requestParserConfig['model_namespaces'];
+        }
+
+        $this->request = $request;
     }
 
-    public function parse(Request $request)
+    public function getBuilder()
     {
-        $modelBuilderStruct = $this->createModelBuilderStruct($request);
+        $modelBuilderStruct = $this->createModelBuilderStruct($this->request);
         $model = $this->createModel($modelBuilderStruct->baseModelName);
 
         return $this->applyFilter($model::query(), $modelBuilderStruct->filters);
@@ -48,15 +60,14 @@ class RequestParser
     {
         $requestRoute = $request->route();
         $filterQuery = $request->filter ?: [];
-        $isMandatory = $this->isBaseModelMandatory($filterQuery);
 
-        $baseModelName = $this->getBaseModelName($requestRoute, $isMandatory);
+        $baseModelName = $this->getBaseModelName($requestRoute);
         $filters = $this->parseFilter($filterQuery);
 
         return new ModelBuilderStruct($baseModelName, $filters);
     }
 
-    private function getBaseModelName(Route $route, bool $isMandatory): string
+    private function getBaseModelName(Route $route): string
     {
         $modelCandidates = [];
         if ($route->controller) {
@@ -81,19 +92,17 @@ class RequestParser
             return $modelName;
         }
 
-        if($isMandatory) {
-            $errorMessage = "Model not found after looking on ";
-            $searchPath = [];
-            foreach ($modelCandidates as $candidate) {
-                foreach ($this->modelNamespaces as $modelNamespace) {
-                    $searchPath[] = $modelNamespace . '\\' . $candidate;
-                }
+        $errorMessage = "Model not found after looking on ";
+        $searchPath = [];
+        foreach ($modelCandidates as $candidate) {
+            foreach ($this->modelNamespaces as $modelNamespace) {
+                $searchPath[] = $modelNamespace . '\\' . $candidate;
             }
-
-            $errorMessage .= join(', ', $searchPath);
-
-            throw new ModelNotFoundException($errorMessage);
         }
+
+        $errorMessage .= join(', ', $searchPath);
+
+        throw new ModelNotFoundException($errorMessage);
     }
 
     private function parseFilter(array $filterQuery = []): array
@@ -137,17 +146,6 @@ class RequestParser
         }
 
         return $builder;
-    }
-
-    private function isBaseModelMandatory(array $filterQuery)
-    {
-        foreach ($filterQuery as $key => $value) {
-            if (strpos($key, ".") !== false) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function createModel(string $baseModelName)
