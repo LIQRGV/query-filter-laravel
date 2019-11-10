@@ -7,7 +7,7 @@
     "query filter",
     "eloquent"
   ],
-  "license": "TBD",
+  "license": "Apache-2.0",
   "type": "project",
   "require": {
     "haydenpierce/class-finder": "^0.4.0",
