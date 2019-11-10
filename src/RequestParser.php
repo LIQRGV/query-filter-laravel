@@ -39,7 +39,7 @@ class RequestParser
     public function __construct(Request $request)
     {
         $requestParserConfig = Config::get('request_parser');
-        if(is_null($requestParserConfig)) {
+        if(is_null($requestParserConfig) || empty($requestParserConfig)) {
             $this->modelNamespaces = ["App\\Models"];
         } else {
             $this->modelNamespaces = $requestParserConfig['model_namespaces'];
@@ -56,7 +56,7 @@ class RequestParser
         return $this->applyFilter($model::query(), $modelBuilderStruct->filters);
     }
 
-    public function createModelBuilderStruct(Request $request): ModelBuilderStruct
+    private function createModelBuilderStruct(Request $request): ModelBuilderStruct
     {
         $requestRoute = $request->route();
         $filterQuery = $request->filter ?: [];

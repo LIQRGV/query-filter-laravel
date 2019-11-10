@@ -28,6 +28,10 @@ class FilterStruct {
         if(array_key_exists($this->operator, self::$WHERE_QUERY_MAPPING)) {
             $whereQuery = self::$WHERE_QUERY_MAPPING[$this->operator];
 
+            if (is_string($this->value)) {
+                $this->value = explode(",", $this->value);
+            }
+
             return $object->$whereQuery($this->fieldName, $this->value);
         }
 
