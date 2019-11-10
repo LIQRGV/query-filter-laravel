@@ -114,6 +114,35 @@ class RequestParserTest extends TestCase
     function testFilterNormalViaClosure()
     {
         $uri = 'some_model';
+        $routeResolverResult = [
+            'uses' => MockModelController::class . '@' . 'index',
+        ];
+        $query = new ParameterBag([
+            "filter" => [
+                "x" => [
+                    "is" => 1
+                ]
+            ],
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $this->assertEquals("select * from \"mock_models\" where \"x\" = ?", $builder->toSql());
+        $this->assertEquals([1], $builder->getBindings());
+    }
+
+    function testFilterRouteIsArray()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
         $query = new ParameterBag([
             "filter" => [
                 "x" => [
@@ -224,13 +253,36 @@ class RequestParserTest extends TestCase
     {
         $route = new Route('GET', $uri, []);
 
-        $request = new Request();
+        $serverParam = [
+            'REQUEST_URI' => $uri,
+        ];
+
+        $request = new Request([], [], [], [], [], $serverParam);
         $request->query = $query;
         $request->setRouteResolver(function () use ($route) {
             return $route;
         });
 
         $route->bind($request);
+
+        Config::request_parser($requestParserOptions);
+
+        return $request;
+    }
+
+    private function createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions)
+    {
+        $serverParam = [
+            'REQUEST_URI' => $uri,
+        ];
+
+        $request = new Request([], [], [], [], [], $serverParam);
+        $request->query = $query;
+        $request->setRouteResolver(function () use ($routeResolverResult) {
+            return [
+                true, $routeResolverResult, []
+            ];
+        });
 
         Config::request_parser($requestParserOptions);
 
