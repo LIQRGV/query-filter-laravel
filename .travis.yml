@@ -4,3 +4,7 @@ php:
 before_script:
   - composer install
   - composer dump-autoload
+script:
+  - ./phpunit --coverage-clover=coverage.xml
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
