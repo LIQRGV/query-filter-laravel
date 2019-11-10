@@ -6,6 +6,7 @@ use HaydenPierce\ClassFinder\ClassFinder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Config;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
@@ -58,21 +59,22 @@ class RequestParser
 
     private function createModelBuilderStruct(Request $request): ModelBuilderStruct
     {
-        $requestRoute = $request->route();
         $filterQuery = $request->filter ?: [];
 
-        $baseModelName = $this->getBaseModelName($requestRoute);
+        $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
 
         return new ModelBuilderStruct($baseModelName, $filters);
     }
 
-    private function getBaseModelName(Route $route): string
+    private function getBaseModelName(Request $request): string
     {
         $modelCandidates = [];
-        if ($route->controller) {
+        $route = $request->route();
+        $controller = $this->getControllerFromRoute($route);
+        if ($controller) {
             $stringToRemove = "controller";
-            $className = class_basename($route->controller);
+            $className = class_basename($controller);
             $maybeBaseModel = substr_replace($className, '', strrpos(strtolower($className), $stringToRemove), strlen($stringToRemove));
             $modelCandidates[] = $maybeBaseModel;
 
@@ -82,7 +84,7 @@ class RequestParser
             }
         }
 
-        $exploded = explode("/", $route->uri);
+        $exploded = explode("/", $request->getRequesturi());
         $lastURISegment = strtolower(end($exploded));
         $camelizeURI = str_replace('_', '', ucwords($lastURISegment, '_'));
         $modelCandidates[] = $camelizeURI;
@@ -148,7 +150,7 @@ class RequestParser
         return $builder;
     }
 
-    public function createModel(string $baseModelName)
+    private function createModel(string $baseModelName)
     {
         $model = new $baseModelName;
         if (!($model instanceof Model)) {
@@ -156,5 +158,19 @@ class RequestParser
         }
 
         return $model;
+    }
+
+    private function getControllerFromRoute($route)
+    {
+        if (is_array($route)) {
+            $controllerWithMethod = current($route[1]);
+            $splitedControllerMethod = explode('@', $controllerWithMethod);
+            $routingHandler = current($splitedControllerMethod);
+            $maybeController = new $routingHandler;
+
+            return new $maybeController instanceof Controller ? $maybeController : null;
+        }
+
+        return $route->controller;
     }
 }
