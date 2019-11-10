@@ -1,4 +1,7 @@
-# Query Filter Laravel
+# Query Filter Laravel 
+[![Build Status](https://api.travis-ci.com/LIQRGV/query-filter-laravel.svg?branch=master)](https://travis-ci.com/LIQRGV/query-filter-laravel)
+[![codecov](https://codecov.io/gh/LIQRGV/query-filter-laravel/branch/master/graph/badge.svg)](https://codecov.io/gh/LIQRGV/query-filter-laravel)
+
 
 Change your Request into Query builder
 
