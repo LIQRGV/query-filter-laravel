@@ -19,11 +19,29 @@ Book::query()
 
 ## Getting Started
 
-(TBD)
+You can install this package via composer CLI using
+```
+composer require liqrgv/query-filter-laravel
+```
 
-### Installing
+## Usage
 
-(TBD)
+You can add `RequestParser` class to your route closure
+```
+Route::get('/model', function(RequestParser $parser) {
+    $builder = $parser->getBuilder();
+    // do something with builder
+    .............
+});
+```
+or on your controller 
+```
+public function index(RequestParser $parser) {
+    $builder = $parser->getBuilder();
+    // do something with builder
+    .............
+}
+```
 
 ## Running the tests
 
