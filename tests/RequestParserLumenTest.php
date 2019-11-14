@@ -28,7 +28,10 @@ class RequestParserLumenTest extends TestCase
         $requestParser = new RequestParser($request);
         $builder = $requestParser->getBuilder();
 
-        $this->assertEquals("select * from \"mock_some_models\" where \"x\" = ?", $builder->toSql());
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_some_models", $query->from);
+        $this->assertEquals("x", $query->wheres[0]['column']);
+        $this->assertEquals("=", $query->wheres[0]['operator']);
         $this->assertEquals([1], $builder->getBindings());
     }
 }

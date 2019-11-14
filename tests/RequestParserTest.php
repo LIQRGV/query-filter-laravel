@@ -85,7 +85,10 @@ class RequestParserTest extends TestCase
         $requestParser = new RequestParser($request);
         $builder = $requestParser->getBuilder();
 
-        $this->assertEquals("select * from \"mock_models\" where \"y\" in (?, ?, ?)", $builder->toSql());
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals("y", $query->wheres[0]['column']);
+        $this->assertEquals("in", strtolower($query->wheres[0]['type']));
         $this->assertEquals(['2', '3', '4'], $builder->getBindings());
     }
 
