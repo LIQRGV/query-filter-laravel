@@ -13,6 +13,7 @@ use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Struct\FilterStruct;
 use LIQRGV\QueryFilter\Struct\ModelBuilderStruct;
+use LIQRGV\QueryFilter\Struct\SortStruct;
 
 class RequestParser
 {
@@ -54,17 +55,23 @@ class RequestParser
         $modelBuilderStruct = $this->createModelBuilderStruct($this->request);
         $model = $this->createModel($modelBuilderStruct->baseModelName);
 
-        return $this->applyFilter($model::query(), $modelBuilderStruct->filters);
+        $builder = $this->applyFilter($model::query(), $modelBuilderStruct->filters);
+        $builder = $this->applySorter($builder, $modelBuilderStruct->sorter);
+
+        return $builder;
     }
 
     private function createModelBuilderStruct(Request $request): ModelBuilderStruct
     {
-        $filterQuery = $request->filter ?: [];
+        $queryParam = $request->query;
+        $filterQuery = $queryParam->get('filter') ?? [];
+        $sortQuery = $queryParam->get('sort') ?? null;
 
         $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
+        $sorter = $this->parseSorter($sortQuery);
 
-        return new ModelBuilderStruct($baseModelName, $filters);
+        return new ModelBuilderStruct($baseModelName, $filters, $sorter);
     }
 
     private function getBaseModelName(Request $request): string
@@ -126,6 +133,23 @@ class RequestParser
         return $filters;
     }
 
+    private function parseSorter(?string $sortQuery): ?SortStruct
+    {
+        if(is_null($sortQuery)) {
+            return null;
+        }
+
+        $fieldPattern = "/^\-?([a-zA-z\_]+)$/";
+        if(preg_match($fieldPattern, $sortQuery, $match)) {
+            $fieldName = $match[1];
+            $direction = $sortQuery[0] == "-" ? "DESC" : "ASC";
+
+            return new SortStruct($fieldName, $direction);
+        }
+
+        return null;
+    }
+
     private function getModelFromNamespaces(string $modelName, array $modelNamespaces)
     {
         foreach ($modelNamespaces as $modelNamespace) {
@@ -148,6 +172,15 @@ class RequestParser
         }
 
         return $builder;
+    }
+
+    private function applySorter(Builder $builder, ?SortStruct $sorter)
+    {
+        if(is_null($sorter)) {
+            return $builder;
+        }
+
+        return $builder->orderBy($sorter->fieldName, $sorter->direction);
     }
 
     private function createModel(string $baseModelName)
