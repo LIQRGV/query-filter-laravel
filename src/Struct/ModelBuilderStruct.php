@@ -12,9 +12,14 @@ class ModelBuilderStruct {
      * @var array
      */
     public $filters;
+    /**
+     * @var SortStruct
+     */
+    public $sorter;
 
-    public function __construct(string $baseModelName, array $filters) {
+    public function __construct(string $baseModelName, array $filters, ?SortStruct $sorter) {
         $this->baseModelName = $baseModelName;
         $this->filters = $filters;
+        $this->sorter = $sorter;
     }
 }

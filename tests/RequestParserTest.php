@@ -63,6 +63,53 @@ class RequestParserTest extends TestCase
         $this->assertEquals('LIQRGV\QueryFilter\Mocks\MockClosureModel', $builderStruct->baseModelName);
     }
 
+    function testSortBy()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "sort" => "-name",
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals("name", $builder->getQuery()->orders[0]['column']);
+        $this->assertEquals("desc", strtolower($builder->getQuery()->orders[0]['direction']));
+    }
+
+    function testSortByWithInvalidField()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "sort" => "-name-with-dash",
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEmpty($builder->getQuery()->orders);
+    }
+
     function testFilterKeywordIn()
     {
         $uri = 'some_model';
