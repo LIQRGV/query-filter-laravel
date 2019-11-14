@@ -49,7 +49,7 @@ class RequestParser
         $this->request = $request;
     }
 
-    public function getBuilder()
+    public function getBuilder(): Builder
     {
         $modelBuilderStruct = $this->createModelBuilderStruct($this->request);
         $model = $this->createModel($modelBuilderStruct->baseModelName);

@@ -41,9 +41,6 @@ class RequestParserLaravelTest extends TestCase
     function testFilterNormalViaClosure()
     {
         $uri = 'mock_some_model';
-        $routeResolverResult = [
-            'uses' => MockModelController::class . '@' . 'index',
-        ];
         $query = new ParameterBag([
             "filter" => [
                 "x" => [
@@ -57,13 +54,13 @@ class RequestParserLaravelTest extends TestCase
             ]
         ];
 
-        $request = $this->createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions);
+        $request = $this->createClosureRequest($uri, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
         $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
-        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals("mock_some_models", $query->from);
         $this->assertEquals("x", $query->wheres[0]['column']);
         $this->assertEquals("=", $query->wheres[0]['operator']);
         $this->assertEquals([1], $builder->getBindings());
