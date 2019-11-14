@@ -17,7 +17,7 @@ class ModelBuilderStruct {
      */
     public $sorter;
 
-    public function __construct(string $baseModelName, array $filters, ?SortStruct $sorter) {
+    public function __construct(string $baseModelName, array $filters, array $sorter) {
         $this->baseModelName = $baseModelName;
         $this->filters = $filters;
         $this->sorter = $sorter;

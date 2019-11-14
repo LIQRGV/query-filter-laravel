@@ -87,6 +87,32 @@ class RequestParserTest extends TestCase
         $this->assertEquals("desc", strtolower($builder->getQuery()->orders[0]['direction']));
     }
 
+    function testSortByMultiple()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "sort" => "-name,id",
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals("name", $builder->getQuery()->orders[0]['column']);
+        $this->assertEquals("desc", strtolower($builder->getQuery()->orders[0]['direction']));
+        $this->assertEquals("id", $builder->getQuery()->orders[1]['column']);
+        $this->assertEquals("asc", strtolower($builder->getQuery()->orders[1]['direction']));
+    }
+
     function testSortByWithInvalidField()
     {
         $uri = 'some_model';

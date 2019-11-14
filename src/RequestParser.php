@@ -133,21 +133,27 @@ class RequestParser
         return $filters;
     }
 
-    private function parseSorter(?string $sortQuery): ?SortStruct
+    private function parseSorter(?string $sortQuery): ?array
     {
         if(is_null($sortQuery)) {
-            return null;
+            return [];
         }
+
+        $sortStructs = [];
 
         $fieldPattern = "/^\-?([a-zA-z\_]+)$/";
-        if(preg_match($fieldPattern, $sortQuery, $match)) {
-            $fieldName = $match[1];
-            $direction = $sortQuery[0] == "-" ? "DESC" : "ASC";
+        $splitedSortQuery = explode(",", $sortQuery);
 
-            return new SortStruct($fieldName, $direction);
+        foreach ($splitedSortQuery as $singleSortQuery) {
+            if(preg_match($fieldPattern, $singleSortQuery, $match)) {
+                $fieldName = $match[1];
+                $direction = $singleSortQuery[0] == "-" ? "DESC" : "ASC";
+
+                $sortStructs[] = new SortStruct($fieldName, $direction);
+            }
         }
 
-        return null;
+        return $sortStructs;
     }
 
     private function getModelFromNamespaces(string $modelName, array $modelNamespaces)
@@ -174,13 +180,17 @@ class RequestParser
         return $builder;
     }
 
-    private function applySorter(Builder $builder, ?SortStruct $sorter)
+    private function applySorter(Builder $builder, array $sorter)
     {
-        if(is_null($sorter)) {
+        if(empty($sorter)) {
             return $builder;
         }
 
-        return $builder->orderBy($sorter->fieldName, $sorter->direction);
+        foreach ($sorter as $sort) {
+            $builder = $builder->orderBy($sort->fieldName, $sort->direction);
+        }
+
+        return $builder;
     }
 
     private function createModel(string $baseModelName)
