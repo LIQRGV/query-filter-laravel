@@ -200,4 +200,53 @@ class RequestParserTest extends TestCase
         $requestParser = new RequestParser($request);
         $requestParser->getBuilder();
     }
+
+    function testFilterWithOr()
+    {
+
+        //Create Request
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "filter" => [
+                "x|y" =>  [
+                    "is" => "1"
+                ],
+                "z" => [
+                    "in" => "1,2,3"
+                ]
+            ]
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+
+        $this->assertEquals("mock_models", $query->from);
+
+        //Assert subquery exists
+        $this->assertArrayHasKey('query', $query->wheres[0]);
+        $subquery = $query->wheres[0]['query'];
+
+        //Assert subquery components
+        $this->assertEquals("x", $subquery->wheres[0]['column']);
+        $this->assertEquals("=", strtolower($subquery->wheres[0]['operator']));
+
+        $this->assertEquals("y", $subquery->wheres[1]['column']);
+        $this->assertEquals("=", strtolower($subquery->wheres[1]['operator']));
+        $this->assertEquals("or", strtolower($subquery->wheres[1]['boolean']));
+
+        //Assert second where term of the main query
+        $this->assertEquals("z", $query->wheres[1]['column']);
+        $this->assertEquals("in", strtolower($query->wheres[1]['type']));
+
+        $this->assertEquals(['1', '1', '1', '2', '3'], $builder->getBindings());
+    }
 }
