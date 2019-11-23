@@ -32,18 +32,12 @@ class FilterStruct {
 
     public function apply($object) {
         if (is_array($this->fieldName)) {
-            $me = $this;
-
-            $subquery = function ($query) use ($me) {
-                $query = $query->where($me->fieldName[0], $me->operator, $me->value);
-
-                for ($fieldIndex = 1; $fieldIndex < count($me->fieldName); $fieldIndex++) {
-                    $query = $query->orWhere($me->fieldName[$fieldIndex], $me->operator, $me->value);
+            $subquery = function ($query) {
+                for ($fieldIndex = 0; $fieldIndex < count($this->fieldName); $fieldIndex++) {
+                    $query = $query->orWhere($this->fieldName[$fieldIndex], $this->operator, $this->value);
                 }
-
                 return $query;
             };
-
             return $object->where($subquery);
         }
 
