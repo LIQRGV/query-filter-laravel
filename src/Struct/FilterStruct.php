@@ -8,6 +8,8 @@ class FilterStruct {
         "!is" => "!=",
     ];
 
+    private static $LOGICAL_OR = "|";
+
     private static $WHERE_QUERY_MAPPING = [
         "in" => "whereIn",
         "!in" => "whereNotIn",
@@ -19,12 +21,26 @@ class FilterStruct {
     public $value;
 
     public function __construct($fieldName, $operator, $value) {
-        $this->fieldName = $fieldName;
+        if (strpos($fieldName, self::$LOGICAL_OR)) {
+            $this->fieldName = explode(self::$LOGICAL_OR, $fieldName);
+        } else {
+            $this->fieldName = $fieldName;
+        }
         $this->operator = $this->transformOperator($operator);
         $this->value = $value;
     }
 
     public function apply($object) {
+        if (is_array($this->fieldName)) {
+            $subquery = function ($query) {
+                for ($fieldIndex = 0; $fieldIndex < count($this->fieldName); $fieldIndex++) {
+                    $query = $query->orWhere($this->fieldName[$fieldIndex], $this->operator, $this->value);
+                }
+                return $query;
+            };
+            return $object->where($subquery);
+        }
+
         if(array_key_exists($this->operator, self::$WHERE_QUERY_MAPPING)) {
             $whereQuery = self::$WHERE_QUERY_MAPPING[$this->operator];
 
