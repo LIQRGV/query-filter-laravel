@@ -10,15 +10,11 @@
   "license": "Apache-2.0",
   "type": "project",
   "require": {
-    "haydenpierce/class-finder": "^0.4.0",
-    "illuminate/database": "~6.0",
-    "illuminate/http": "~6.0",
-    "illuminate/routing": "~6.0",
-    "illuminate/support": "~6.0"
+    "haydenpierce/class-finder": "^0.4.0"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
-    "illuminate/events": "~6.0",
+    "illuminate/routing": "~6.0",
     "laravel/lumen-framework": "^6.0",
     "mockery/mockery": "^1.0",
     "phpunit/phpunit": "~7.0"
