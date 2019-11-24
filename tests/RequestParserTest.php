@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Facade;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
+use LIQRGV\QueryFilter\Mocks\MockLumenModelController;
 use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -115,7 +116,7 @@ class RequestParserTest extends TestCase
     {
         $uri = 'some_model';
         $routeResolverResult = [
-            'uses' => MockModelController::class . '@' . 'index',
+            'uses' => MockLumenModelController::class . '@' . 'index',
         ];
         $query = new ParameterBag([
             "filter" => [
@@ -135,7 +136,7 @@ class RequestParserTest extends TestCase
         $requestParser = new RequestParser($request);
         $builder = $requestParser->getBuilder();
 
-        $this->assertEquals("select * from \"mock_models\" where \"x\" = ?", $builder->toSql());
+        $this->assertEquals("select * from \"mock_lumen_models\" where \"x\" = ?", $builder->toSql());
         $this->assertEquals([1], $builder->getBindings());
     }
 
