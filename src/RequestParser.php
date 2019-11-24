@@ -39,7 +39,7 @@ class RequestParser
     public function __construct(Request $request)
     {
         $requestParserConfig = Config::get('request_parser');
-        if(is_null($requestParserConfig) || empty($requestParserConfig)) {
+        if (is_null($requestParserConfig) || empty($requestParserConfig)) {
             $this->modelNamespaces = ["App\\Models"];
         } else {
             $this->modelNamespaces = $requestParserConfig['model_namespaces'];
@@ -85,7 +85,8 @@ class RequestParser
 
         $exploded = explode("/", $request->getRequesturi());
         $lastURISegment = strtolower(end($exploded));
-        $camelizeURI = str_replace('_', '', ucwords($lastURISegment, '_'));
+        $lastURINoQuery = current(explode("?", $lastURISegment, 2));
+        $camelizeURI = str_replace('_', '', ucwords($lastURINoQuery, '_'));
         $modelCandidates[] = $camelizeURI;
 
         $modelName = $this->getModelFromNamespaces($camelizeURI, $this->modelNamespaces);
@@ -162,8 +163,12 @@ class RequestParser
     private function getControllerFromRoute($route)
     {
         if (is_array($route)) {
-            $controllerWithMethod = current($route[1]);
-            $splitedControllerMethod = explode('@', $controllerWithMethod);
+            $maybeControllerWithMethod = current($route[1]);
+            if ($maybeControllerWithMethod instanceof \Closure) {
+                return null;
+            }
+
+            $splitedControllerMethod = explode('@', $maybeControllerWithMethod);
             $routingHandler = current($splitedControllerMethod);
             $maybeController = new $routingHandler;
 

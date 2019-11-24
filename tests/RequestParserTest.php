@@ -140,6 +140,34 @@ class RequestParserTest extends TestCase
         $this->assertEquals([1], $builder->getBindings());
     }
 
+    function testFilterNormalViaClosureURIHasFilter()
+    {
+        $uri = 'some_model?filter[x][is]=1';
+        $routeResolverResult = [
+            function() {}
+        ];
+        $query = new ParameterBag([
+            "filter" => [
+                "x" => [
+                    "is" => 1
+                ]
+            ],
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $this->assertEquals("select * from \"some_models\" where \"x\" = ?", $builder->toSql());
+        $this->assertEquals([1], $builder->getBindings());
+    }
+
     function testFilterRouteIsArray()
     {
         $uri = 'some_model';
