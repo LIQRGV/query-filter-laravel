@@ -17,7 +17,7 @@ class ModelBuilderStruct {
      */
     public $sorter;
     /**
-     * @var PaginatorStruct
+     * @var array
      */
     public $paginator;
 
