@@ -210,7 +210,9 @@ class RequestParser
 
     private function applyPaginator(Builder $builder, array $paginator): Builder
     {
-        return $builder->limit($paginator['limit'])->offset($paginator['offset']);
+        if ($paginator['limit'])
+            return $builder->limit($paginator['limit'])->offset($paginator['offset']);
+        return $builder;
     }
 
     private function createModel(string $baseModelName)
