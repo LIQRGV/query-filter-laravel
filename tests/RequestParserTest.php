@@ -5,7 +5,6 @@ namespace Tests\LIQRGV\QueryFilter;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Config;
-use LIQRGV\QueryFilter\Exception\InvalidPaginatorRequestException;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
@@ -429,24 +428,5 @@ class RequestParserTest extends TestCase
         $this->assertEquals("mock_models", $query->from);
         $this->assertEquals(100, $query->limit);
         $this->assertEquals(50, $query->offset);
-    }
-
-    function testInvalidPaginatorRequest()
-    {
-        $this->expectException(InvalidPaginatorRequestException::class);
-        $uri = 'some_model';
-        $controllerClass = MockModelController::class;
-        $query = new ParameterBag([
-            "offset" => "50"
-        ]);
-        $requestParserOptions = [
-            'model_namespaces' => [
-                'LIQRGV\QueryFilter\Mocks',
-            ]
-        ];
-
-        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
-        $requestParser = new RequestParser($request);
-        $requestParser->getBuilder();
     }
 }

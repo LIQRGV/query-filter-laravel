@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Laravel\Lumen\Routing\Controller;
-use LIQRGV\QueryFilter\Exception\InvalidPaginatorRequestException;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Struct\FilterStruct;
@@ -68,7 +67,7 @@ class RequestParser
         $filterQuery = $queryParam->get('filter') ?? [];
         $sortQuery = $queryParam->get('sort') ?? null;
         $limitQuery = $queryParam->get('limit') ?? null;
-        $offsetQuery = $queryParam->get('offset') ?? null;
+        $offsetQuery = $queryParam->get('offset') ?? 0;
 
         $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
@@ -162,9 +161,6 @@ class RequestParser
     }
 
     private function parsePaginator($limitQuery, $offsetQuery){
-        if ($limitQuery xor $offsetQuery){
-            throw new InvalidPaginatorRequestException();
-        }
         return [
             "limit" => $limitQuery,
             "offset" => $offsetQuery
@@ -210,8 +206,9 @@ class RequestParser
 
     private function applyPaginator(Builder $builder, array $paginator): Builder
     {
-        if ($paginator['limit'])
+        if ($paginator['limit']){
             return $builder->limit($paginator['limit'])->offset($paginator['offset']);
+        }
         return $builder;
     }
 
