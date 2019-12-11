@@ -56,6 +56,7 @@ class RequestParser
 
         $builder = $this->applyFilter($model::query(), $modelBuilderStruct->filters);
         $builder = $this->applySorter($builder, $modelBuilderStruct->sorter);
+        $builder = $this->applyPaginator($builder, $modelBuilderStruct->paginator);
 
         return $builder;
     }
@@ -65,12 +66,15 @@ class RequestParser
         $queryParam = $request->query;
         $filterQuery = $queryParam->get('filter') ?? [];
         $sortQuery = $queryParam->get('sort') ?? null;
+        $limitQuery = $queryParam->get('limit') ?? null;
+        $offsetQuery = $queryParam->get('offset') ?? 0;
 
         $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
         $sorter = $this->parseSorter($sortQuery);
+        $paginator = $this->parsePaginator($limitQuery, $offsetQuery);
 
-        return new ModelBuilderStruct($baseModelName, $filters, $sorter);
+        return new ModelBuilderStruct($baseModelName, $filters, $sorter, $paginator);
     }
 
     private function getBaseModelName(Request $request): string
@@ -156,6 +160,13 @@ class RequestParser
         return $sortStructs;
     }
 
+    private function parsePaginator($limitQuery, $offsetQuery){
+        return [
+            "limit" => $limitQuery,
+            "offset" => $offsetQuery
+        ];
+    }
+
     private function getModelFromNamespaces(string $modelName, array $modelNamespaces)
     {
         foreach ($modelNamespaces as $modelNamespace) {
@@ -190,6 +201,14 @@ class RequestParser
             $builder = $builder->orderBy($sort->fieldName, $sort->direction);
         }
 
+        return $builder;
+    }
+
+    private function applyPaginator(Builder $builder, array $paginator): Builder
+    {
+        if ($paginator['limit']){
+            return $builder->limit($paginator['limit'])->offset($paginator['offset']);
+        }
         return $builder;
     }
 
