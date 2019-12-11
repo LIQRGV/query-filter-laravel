@@ -429,4 +429,50 @@ class RequestParserTest extends TestCase
         $this->assertEquals(100, $query->limit);
         $this->assertEquals(50, $query->offset);
     }
+
+    function testPaginationIgnoreOffset(){
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "offset" => "50"
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertNull($query->limit);
+        $this->assertNull($query->offset);
+    }
+
+    function testPaginationUsingZeroAsDefaultOffset(){
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "limit" => "50"
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals(50, $query->limit);
+        $this->assertEquals(0, $query->offset);
+    }
 }
