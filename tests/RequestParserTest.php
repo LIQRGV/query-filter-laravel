@@ -404,4 +404,29 @@ class RequestParserTest extends TestCase
             $builder->getBindings()
         );
     }
+
+    function testPagination()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $query = new ParameterBag([
+            "limit" => "100",
+            "offset" => "50"
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+        $this->assertEquals("mock_models", $query->from);
+        $this->assertEquals(100, $query->limit);
+        $this->assertEquals(50, $query->offset);
+    }
 }

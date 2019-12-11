@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Laravel\Lumen\Routing\Controller;
+use LIQRGV\QueryFilter\Exception\InvalidPaginatorRequestException;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Struct\FilterStruct;
@@ -56,6 +57,7 @@ class RequestParser
 
         $builder = $this->applyFilter($model::query(), $modelBuilderStruct->filters);
         $builder = $this->applySorter($builder, $modelBuilderStruct->sorter);
+        $builder = $this->applyPaginator($builder, $modelBuilderStruct->paginator);
 
         return $builder;
     }
@@ -65,12 +67,15 @@ class RequestParser
         $queryParam = $request->query;
         $filterQuery = $queryParam->get('filter') ?? [];
         $sortQuery = $queryParam->get('sort') ?? null;
+        $limitQuery = $queryParam->get('limit') ?? null;
+        $offsetQuery = $queryParam->get('offset') ?? null;
 
         $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
         $sorter = $this->parseSorter($sortQuery);
+        $paginator = $this->parsePaginator($limitQuery, $offsetQuery);
 
-        return new ModelBuilderStruct($baseModelName, $filters, $sorter);
+        return new ModelBuilderStruct($baseModelName, $filters, $sorter, $paginator);
     }
 
     private function getBaseModelName(Request $request): string
@@ -156,6 +161,16 @@ class RequestParser
         return $sortStructs;
     }
 
+    private function parsePaginator($limitQuery, $offsetQuery){
+        if ($limitQuery xor $offsetQuery){
+            throw new InvalidPaginatorRequestException();
+        }
+        return [
+            "limit" => $limitQuery,
+            "offset" => $offsetQuery
+        ];
+    }
+
     private function getModelFromNamespaces(string $modelName, array $modelNamespaces)
     {
         foreach ($modelNamespaces as $modelNamespace) {
@@ -191,6 +206,11 @@ class RequestParser
         }
 
         return $builder;
+    }
+
+    private function applyPaginator(Builder $builder, array $paginator): Builder
+    {
+        return $builder->limit($paginator['limit'])->offset($paginator['offset']);
     }
 
     private function createModel(string $baseModelName)

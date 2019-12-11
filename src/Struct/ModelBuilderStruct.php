@@ -16,10 +16,15 @@ class ModelBuilderStruct {
      * @var SortStruct
      */
     public $sorter;
+    /**
+     * @var PaginatorStruct
+     */
+    public $paginator;
 
-    public function __construct(string $baseModelName, array $filters, array $sorter) {
+    public function __construct(string $baseModelName, array $filters, array $sorter, array $paginator) {
         $this->baseModelName = $baseModelName;
         $this->filters = $filters;
         $this->sorter = $sorter;
+        $this->paginator = $paginator;
     }
 }
