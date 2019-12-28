@@ -63,6 +63,27 @@ class RequestParserTest extends TestCase
         $this->assertEquals('LIQRGV\QueryFilter\Mocks\MockClosureModel', $builderStruct->baseModelName);
     }
 
+    public function testModelSetter()
+    {
+        $this->markTestSkipped('Test for debug purpose only, change createModelBuilderStruct modifier to public to use');
+        $uri = 'non_exists_model';
+        $query = new ParameterBag([
+            "filter" => [
+                "y" => [
+                    "in" => "2,3,4",
+                ],
+            ],
+        ]);
+        $requestParserOptions = [];
+
+        $request = $this->createClosureRequest($uri, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $requestParser->setModel('LIQRGV\QueryFilter\Mocks\MockModel');
+        $builderStruct = $requestParser->createModelBuilderStruct($request);
+        $this->assertEquals('LIQRGV\QueryFilter\Mocks\MockModel', $builderStruct->baseModelName);
+    }
+
     function testSortBy()
     {
         $uri = 'some_model';
