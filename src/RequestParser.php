@@ -33,6 +33,10 @@ class RequestParser
      */
     protected $modelName;
     /**
+     * @var bool
+     */
+    protected $guessModelName = false;
+    /**
      * @var array
      */
     private $modelNamespaces;
@@ -56,6 +60,13 @@ class RequestParser
     public function setModel(string $modelName): RequestParser
     {
         $this->modelName = $modelName;
+
+        return $this;
+    }
+
+    public function guessModelName(): RequestParser
+    {
+        $this->guessModelName = true;
 
         return $this;
     }
@@ -94,41 +105,44 @@ class RequestParser
             return $this->modelName;
         }
 
-        $modelCandidates = [];
-        $route = $request->route();
-        $controller = $this->getControllerFromRoute($route);
-        if ($controller) {
-            $stringToRemove = "controller";
-            $className = class_basename($controller);
-            $maybeBaseModel = substr_replace($className, '', strrpos(strtolower($className), $stringToRemove), strlen($stringToRemove));
-            $modelCandidates[] = $maybeBaseModel;
+        $errorMessage = 'Model not found, please use "setModel()" or "guessModelname()" method.';
+        if ($this->guessModelName) {
+            $modelCandidates = [];
+            $route = $request->route();
+            $controller = $this->getControllerFromRoute($route);
+            if ($controller) {
+                $stringToRemove = "controller";
+                $className = class_basename($controller);
+                $maybeBaseModel = substr_replace($className, '', strrpos(strtolower($className), $stringToRemove), strlen($stringToRemove));
+                $modelCandidates[] = $maybeBaseModel;
 
-            $modelName = $this->getModelFromNamespaces($maybeBaseModel, $this->modelNamespaces);
+                $modelName = $this->getModelFromNamespaces($maybeBaseModel, $this->modelNamespaces);
+                if ($modelName) {
+                    return $modelName;
+                }
+            }
+
+            $exploded = explode("/", $request->getRequesturi());
+            $lastURISegment = strtolower(end($exploded));
+            $lastURINoQuery = current(explode("?", $lastURISegment, 2));
+            $camelizeURI = str_replace('_', '', ucwords($lastURINoQuery, '_'));
+            $modelCandidates[] = $camelizeURI;
+
+            $modelName = $this->getModelFromNamespaces($camelizeURI, $this->modelNamespaces);
             if ($modelName) {
                 return $modelName;
             }
-        }
 
-        $exploded = explode("/", $request->getRequesturi());
-        $lastURISegment = strtolower(end($exploded));
-        $lastURINoQuery = current(explode("?", $lastURISegment, 2));
-        $camelizeURI = str_replace('_', '', ucwords($lastURINoQuery, '_'));
-        $modelCandidates[] = $camelizeURI;
-
-        $modelName = $this->getModelFromNamespaces($camelizeURI, $this->modelNamespaces);
-        if ($modelName) {
-            return $modelName;
-        }
-
-        $errorMessage = "Model not found after looking on ";
-        $searchPath = [];
-        foreach ($modelCandidates as $candidate) {
-            foreach ($this->modelNamespaces as $modelNamespace) {
-                $searchPath[] = $modelNamespace . '\\' . $candidate;
+            $errorMessage = "Model not found after looking on ";
+            $searchPath = [];
+            foreach ($modelCandidates as $candidate) {
+                foreach ($this->modelNamespaces as $modelNamespace) {
+                    $searchPath[] = $modelNamespace . '\\' . $candidate;
+                }
             }
-        }
 
-        $errorMessage .= join(', ', $searchPath);
+            $errorMessage .= join(', ', $searchPath);
+        }
 
         throw new ModelNotFoundException($errorMessage);
     }

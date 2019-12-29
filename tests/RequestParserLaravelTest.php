@@ -29,7 +29,7 @@ class RequestParserLaravelTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->getBuilder();
+        $builder = $requestParser->guessModelName()->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -57,7 +57,7 @@ class RequestParserLaravelTest extends TestCase
         $request = $this->createClosureRequest($uri, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->getBuilder();
+        $builder = $requestParser->guessModelName()->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_some_models", $query->from);
