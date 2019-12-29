@@ -35,7 +35,7 @@ class RequestParser
     /**
      * @var bool
      */
-    protected $guessModelName = false;
+    protected $guessModelName = true;
     /**
      * @var array
      */
@@ -60,13 +60,6 @@ class RequestParser
     public function setModel(string $modelName): RequestParser
     {
         $this->modelName = $modelName;
-
-        return $this;
-    }
-
-    public function guessModelName(): RequestParser
-    {
-        $this->guessModelName = true;
 
         return $this;
     }
@@ -105,7 +98,7 @@ class RequestParser
             return $this->modelName;
         }
 
-        $errorMessage = 'Model not found, please use "setModel()" or "guessModelname()" method.';
+        $errorMessage = 'Model not found, please use "setModel()" method.';
         if ($this->guessModelName) {
             $modelCandidates = [];
             $route = $request->route();

@@ -100,7 +100,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -124,7 +124,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -150,7 +150,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -177,7 +177,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -219,7 +219,7 @@ class RequestParserTest extends TestCase
         $request = $this->createClosureRequest($uri, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $requestParser->guessModelName()->getBuilder();
+        $requestParser->getBuilder();
     }
 
     function testFilterWithOr()
@@ -245,7 +245,7 @@ class RequestParserTest extends TestCase
 
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
 
@@ -292,7 +292,7 @@ class RequestParserTest extends TestCase
 
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
 
@@ -344,7 +344,7 @@ class RequestParserTest extends TestCase
 
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
 
@@ -396,7 +396,7 @@ class RequestParserTest extends TestCase
 
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
 
@@ -443,7 +443,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -466,7 +466,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
@@ -489,7 +489,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);

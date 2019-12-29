@@ -26,7 +26,7 @@ class RequestParserLumenTest extends TestCase
         $request = $this->createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_lumen_models", $query->from);
@@ -55,7 +55,7 @@ class RequestParserLumenTest extends TestCase
         $request = $this->createRequestWithRouteArray($uri, $routeResolverResult, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $builder = $requestParser->guessModelName()->getBuilder();
+        $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
