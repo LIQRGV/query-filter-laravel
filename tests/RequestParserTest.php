@@ -7,6 +7,8 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Config;
 use LIQRGV\QueryFilter\Exception\ModelNotFoundException;
 use LIQRGV\QueryFilter\Exception\NotModelException;
+use LIQRGV\QueryFilter\Mocks\MockClosureModel;
+use LIQRGV\QueryFilter\Mocks\MockModel;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
 use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -36,7 +38,7 @@ class RequestParserTest extends TestCase
         Config::request_parser($requestParserOptions);
         $requestParser = new RequestParser($request);
         $builderStruct = $requestParser->createModelBuilderStruct($request);
-        $this->assertEquals('LIQRGV\QueryFilter\Mocks\MockModel', $builderStruct->baseModelName);
+        $this->assertEquals(MockModel::class, $builderStruct->baseModelName);
     }
 
     function testRequestViaClosure()
@@ -60,7 +62,7 @@ class RequestParserTest extends TestCase
         Config::request_parser($requestParserOptions);
         $requestParser = new RequestParser($request);
         $builderStruct = $requestParser->createModelBuilderStruct($request);
-        $this->assertEquals('LIQRGV\QueryFilter\Mocks\MockClosureModel', $builderStruct->baseModelName);
+        $this->assertEquals(MockClosureModel::class, $builderStruct->baseModelName);
     }
 
     function testModelSetter()
@@ -79,7 +81,7 @@ class RequestParserTest extends TestCase
         $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
 
         $requestParser = new RequestParser($request);
-        $requestParser->setModel('LIQRGV\QueryFilter\Mocks\MockModel');
+        $requestParser->setModel(MockModel::class);
         $builder = $requestParser->getBuilder();
 
         $query = $builder->getQuery();
