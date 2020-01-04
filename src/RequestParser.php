@@ -29,6 +29,10 @@ class RequestParser
         "between",
     ];
     /**
+     * @var string
+     */
+    protected $modelName;
+    /**
      * @var array
      */
     private $modelNamespaces;
@@ -47,6 +51,13 @@ class RequestParser
         }
 
         $this->request = $request;
+    }
+
+    public function setModel(string $modelName): RequestParser
+    {
+        $this->modelName = $modelName;
+
+        return $this;
     }
 
     public function getBuilder(): Builder
@@ -79,6 +90,10 @@ class RequestParser
 
     private function getBaseModelName(Request $request): string
     {
+        if ($this->modelName) {
+            return $this->modelName;
+        }
+
         $modelCandidates = [];
         $route = $request->route();
         $controller = $this->getControllerFromRoute($route);
