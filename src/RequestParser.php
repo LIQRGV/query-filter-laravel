@@ -40,6 +40,14 @@ class RequestParser
      * @var Request
      */
     private $request;
+    /**
+     * @var array
+     */
+    private $ignoredFilters = [];
+    /**
+     * @var array
+     */
+    private $allowedFilters = [];
 
     public function __construct(Request $request)
     {
@@ -58,6 +66,16 @@ class RequestParser
         $this->modelName = $modelName;
 
         return $this;
+    }
+
+    public function setIgnoredFilters(array $array)
+    {
+        $this->ignoredFilters = $array;
+    }
+
+    public function setAllowedFilters(array $array)
+    {
+        $this->allowedFilters = $array;
     }
 
     public function getBuilder(): Builder
@@ -136,6 +154,14 @@ class RequestParser
     private function parseFilter(array $filterQuery = []): array
     {
         $filters = [];
+
+        $filterQuery = !empty($this->allowedFilters) ? array_filter($filterQuery, function ($key) {
+            return in_array($key, $this->allowedFilters);
+        }, ARRAY_FILTER_USE_KEY) : $filterQuery;
+
+        $filterQuery = array_filter($filterQuery, function ($key) {
+            return !in_array($key, $this->ignoredFilters);
+        }, ARRAY_FILTER_USE_KEY);
 
         if (is_array($filterQuery)) {
             foreach ($filterQuery as $key => $operatorValuePairs) {
