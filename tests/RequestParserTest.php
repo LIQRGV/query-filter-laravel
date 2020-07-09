@@ -12,6 +12,7 @@ use LIQRGV\QueryFilter\Mocks\MockModel;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
 use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use function foo\func;
 
 class RequestParserTest extends TestCase
 {
@@ -455,7 +456,8 @@ class RequestParserTest extends TestCase
         $this->assertEquals(50, $query->offset);
     }
 
-    function testPaginationIgnoreOffset(){
+    function testPaginationIgnoreOffset()
+    {
         $uri = 'some_model';
         $controllerClass = MockModelController::class;
         $query = new ParameterBag([
@@ -478,7 +480,8 @@ class RequestParserTest extends TestCase
         $this->assertNull($query->offset);
     }
 
-    function testPaginationUsingZeroAsDefaultOffset(){
+    function testPaginationUsingZeroAsDefaultOffset()
+    {
         $uri = 'some_model';
         $controllerClass = MockModelController::class;
         $query = new ParameterBag([
@@ -499,5 +502,131 @@ class RequestParserTest extends TestCase
         $this->assertEquals("mock_models", $query->from);
         $this->assertEquals(50, $query->limit);
         $this->assertEquals(0, $query->offset);
+    }
+
+    function testFilterOnlyAllowedFilter()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $ignoredKey = "ignored_key";
+        $nameKey = "name";
+        $valueKey = "value";
+        $query = new ParameterBag([
+            "filter" => [
+                $nameKey => [
+                    "in" => "2,3,4"
+                ],
+                $valueKey => [
+                    "is" => "5"
+                ],
+                $ignoredKey => [
+                    "is" => "6"
+                ],
+            ],
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $requestParser->setAllowedFilters(["name", "value"]);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+
+        $this->assertEmpty(array_filter($query->wheres, function ($where) use ($ignoredKey) {
+            return $where["column"] == $ignoredKey;
+        }));
+
+        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($nameKey, $valueKey) {
+            return in_array($where["column"], [$nameKey, $valueKey]);
+        });
+        $this->assertEquals(2, count($nameAndValueColumn));
+    }
+
+    function testFilterIgnoreIgnoredFilter()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $ignoredKey = "omnisearch";
+        $notIgnoredKey = "selected_value";
+        $query = new ParameterBag([
+            "filter" => [
+                $notIgnoredKey => [
+                    "is" => "6"
+                ],
+                $ignoredKey => [
+                    "is" => "something"
+                ],
+            ],
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $requestParser->setIgnoredFilters([$ignoredKey]);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+
+        $this->assertEmpty(array_filter($query->wheres, function ($where) use ($ignoredKey) {
+            return $where["column"] == $ignoredKey;
+        }));
+        $this->assertNotEmpty(array_filter($query->wheres, function ($where) use ($notIgnoredKey) {
+            return $where["column"] == $notIgnoredKey;
+        }));
+    }
+
+    function testFilterIgnoredFilterShouldTakePrecedenceOverAllowedFilter()
+    {
+        $uri = 'some_model';
+        $controllerClass = MockModelController::class;
+        $ignoredKey = "ignored_key";
+        $nameKey = "name";
+        $valueKey = "value";
+        $query = new ParameterBag([
+            "filter" => [
+                $nameKey => [
+                    "in" => "2,3,4"
+                ],
+                $valueKey => [
+                    "is" => "5"
+                ],
+                $ignoredKey => [
+                    "is" => "6"
+                ],
+            ],
+        ]);
+        $requestParserOptions = [
+            'model_namespaces' => [
+                'LIQRGV\QueryFilter\Mocks',
+            ]
+        ];
+
+        $request = $this->createControllerRequest($uri, $controllerClass, $query, $requestParserOptions);
+
+        $requestParser = new RequestParser($request);
+        $requestParser->setIgnoredFilters([$ignoredKey]);
+        $requestParser->setAllowedFilters([$nameKey, $valueKey, $ignoredKey]);
+        $builder = $requestParser->getBuilder();
+
+        $query = $builder->getQuery();
+
+        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($nameKey, $valueKey) {
+            return in_array($where["column"], [$nameKey, $valueKey]);
+        });
+        $this->assertEquals(2, count($nameAndValueColumn));
+        $this->assertEmpty(array_filter($query->wheres, function ($where) use ($ignoredKey) {
+            return $where["column"] == $ignoredKey;
+        }));
     }
 }
