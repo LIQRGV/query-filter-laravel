@@ -24,6 +24,7 @@ class RequestParser
         "<",
         "is",
         "!is",
+        "like",
         "in",
         "!in",
         "between",
