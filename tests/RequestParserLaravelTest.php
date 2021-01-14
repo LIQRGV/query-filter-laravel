@@ -33,7 +33,7 @@ class RequestParserLaravelTest extends TestCase
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
-        $this->assertEquals("x", $query->wheres[0]['column']);
+        $this->assertEquals("mock_models.x", $query->wheres[0]['column']);
         $this->assertEquals("=", $query->wheres[0]['operator']);
         $this->assertEquals([1], $builder->getBindings());
     }
@@ -61,7 +61,7 @@ class RequestParserLaravelTest extends TestCase
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_some_models", $query->from);
-        $this->assertEquals("x", $query->wheres[0]['column']);
+        $this->assertEquals("mock_some_models.x", $query->wheres[0]['column']);
         $this->assertEquals("=", $query->wheres[0]['operator']);
         $this->assertEquals([1], $builder->getBindings());
     }

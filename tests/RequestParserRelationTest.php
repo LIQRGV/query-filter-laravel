@@ -47,7 +47,7 @@ class RequestParserRelationTest extends TestCase
 
         // assert relation query
         $this->assertEquals("Basic", $builder->getQuery()->wheres[0]["query"]->wheres[1]["type"]);
-        $this->assertEquals("id", $builder->getQuery()->wheres[0]["query"]->wheres[1]["column"]);
+        $this->assertEquals("mock_models.id", $builder->getQuery()->wheres[0]["query"]->wheres[1]["column"]);
         $this->assertEquals("=", $builder->getQuery()->wheres[0]["query"]->wheres[1]["operator"]);
         $this->assertEquals("2", $builder->getQuery()->wheres[0]["query"]->wheres[1]["value"]);
         $this->assertEquals("and", $builder->getQuery()->wheres[0]["query"]->wheres[1]["boolean"]);
@@ -99,7 +99,7 @@ class RequestParserRelationTest extends TestCase
 
         // assert first relation query field
         $this->assertEquals("Basic", $firstInnerQuery->wheres[1]["type"]);
-        $this->assertEquals("id", $firstInnerQuery->wheres[1]["column"]);
+        $this->assertEquals("mock_models.id", $firstInnerQuery->wheres[1]["column"]);
         $this->assertEquals("=", $firstInnerQuery->wheres[1]["operator"]);
         $this->assertEquals("2", $firstInnerQuery->wheres[1]["value"]);
         $this->assertEquals("and", $firstInnerQuery->wheres[1]["boolean"]);
@@ -113,7 +113,7 @@ class RequestParserRelationTest extends TestCase
 
         // assert second relation query field
         $this->assertEquals("Basic", $secondInnerQuery->wheres[1]["type"]);
-        $this->assertEquals("other_attr", $secondInnerQuery->wheres[1]["column"]);
+        $this->assertEquals("mock_models.other_attr", $secondInnerQuery->wheres[1]["column"]);
         $this->assertEquals("=", $secondInnerQuery->wheres[1]["operator"]);
         $this->assertEquals("2", $secondInnerQuery->wheres[1]["value"]);
         $this->assertEquals("and", $secondInnerQuery->wheres[1]["boolean"]);

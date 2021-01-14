@@ -54,14 +54,16 @@ class FilterStruct {
         if ($this->isRelation($fieldName)) {
             return $this->_applyRelation($object, $fieldName, $boolean, $isChild);
         }
+
+        $completeFieldName = $object->qualifyColumn($fieldName);
         if (array_key_exists($this->operator, self::$WHERE_QUERY_MAPPING)) {
             $whereQuery = self::$WHERE_QUERY_MAPPING[$this->operator];
             $value = explode(",", $this->value);
 
-            return $object->$whereQuery($fieldName, $value, $boolean);
+            return $object->$whereQuery($completeFieldName, $value, $boolean);
         }
 
-        return $object->where($fieldName, $this->operator, $this->value, $boolean);
+        return $object->where($completeFieldName, $this->operator, $this->value, $boolean);
     }
 
     private function transformOperator($rawOperator) {

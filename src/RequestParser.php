@@ -226,6 +226,7 @@ class RequestParser
 
     private function applyFilter(Builder $builder, array $filters): Builder
     {
+        /** @var FilterStruct $filterStruct */
         foreach ($filters as $filterStruct) {
             $builder = $filterStruct->apply($builder);
         }

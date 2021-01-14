@@ -186,7 +186,7 @@ class RequestParserTest extends TestCase
 
         $query = $builder->getQuery();
         $this->assertEquals("mock_models", $query->from);
-        $this->assertEquals("y", $query->wheres[0]['column']);
+        $this->assertEquals("mock_models.y", $query->wheres[0]['column']);
         $this->assertEquals("in", strtolower($query->wheres[0]['type']));
         $this->assertEquals(['2', '3', '4'], $builder->getBindings());
     }
@@ -261,15 +261,15 @@ class RequestParserTest extends TestCase
         $subquery = $query->wheres[0]['query'];
 
         //Assert subquery components
-        $this->assertEquals("x", $subquery->wheres[0]['column']);
+        $this->assertEquals("mock_models.x", $subquery->wheres[0]['column']);
         $this->assertEquals("=", strtolower($subquery->wheres[0]['operator']));
 
-        $this->assertEquals("y", $subquery->wheres[1]['column']);
+        $this->assertEquals("mock_models.y", $subquery->wheres[1]['column']);
         $this->assertEquals("=", strtolower($subquery->wheres[1]['operator']));
         $this->assertEquals("or", strtolower($subquery->wheres[1]['boolean']));
 
         //Assert second where term of the main query
-        $this->assertEquals("z", $query->wheres[1]['column']);
+        $this->assertEquals("mock_models.z", $query->wheres[1]['column']);
         $this->assertEquals("in", strtolower($query->wheres[1]['type']));
 
         $this->assertEquals(['1', '1', '1', '2', '3'], $builder->getBindings());
@@ -308,14 +308,14 @@ class RequestParserTest extends TestCase
 
         $subquery1 = $query->wheres[0]['query'];
 
-        $this->assertEquals("c", $subquery1->wheres[0]['column']);
+        $this->assertEquals("mock_models.c", $subquery1->wheres[0]['column']);
         $this->assertEquals("in", strtolower($subquery1->wheres[0]['type']));
 
-        $this->assertEquals("d", $subquery1->wheres[1]['column']);
+        $this->assertEquals("mock_models.d", $subquery1->wheres[1]['column']);
         $this->assertEquals("in", strtolower($subquery1->wheres[1]['type']));
         $this->assertEquals("or", strtolower($subquery1->wheres[1]['boolean']));
 
-        $this->assertEquals("i", $query->wheres[1]['column']);
+        $this->assertEquals("mock_models.i", $query->wheres[1]['column']);
         $this->assertEquals("between", strtolower($query->wheres[1]['type']));
 
         $this->assertEquals(
@@ -360,14 +360,14 @@ class RequestParserTest extends TestCase
 
         $subquery1 = $query->wheres[0]['query'];
 
-        $this->assertEquals("e", $subquery1->wheres[0]['column']);
+        $this->assertEquals("mock_models.e", $subquery1->wheres[0]['column']);
         $this->assertEquals("NotIn", $subquery1->wheres[0]['type']);
 
-        $this->assertEquals("f", $subquery1->wheres[1]['column']);
+        $this->assertEquals("mock_models.f", $subquery1->wheres[1]['column']);
         $this->assertEquals("NotIn", $subquery1->wheres[1]['type']);
         $this->assertEquals("or", strtolower($subquery1->wheres[1]['boolean']));
 
-        $this->assertEquals("i", $query->wheres[1]['column']);
+        $this->assertEquals("mock_models.i", $query->wheres[1]['column']);
         $this->assertEquals("between", strtolower($query->wheres[1]['type']));
 
         $this->assertEquals(
@@ -412,14 +412,14 @@ class RequestParserTest extends TestCase
 
         $subquery1 = $query->wheres[0]['query'];
 
-        $this->assertEquals("g", $subquery1->wheres[0]['column']);
+        $this->assertEquals("mock_models.g", $subquery1->wheres[0]['column']);
         $this->assertEquals("between", strtolower($subquery1->wheres[0]['type']));
 
-        $this->assertEquals("h", $subquery1->wheres[1]['column']);
+        $this->assertEquals("mock_models.h", $subquery1->wheres[1]['column']);
         $this->assertEquals("between", strtolower($subquery1->wheres[1]['type']));
         $this->assertEquals("or", strtolower($subquery1->wheres[1]['boolean']));
 
-        $this->assertEquals("i", $query->wheres[1]['column']);
+        $this->assertEquals("mock_models.i", $query->wheres[1]['column']);
         $this->assertEquals("between", strtolower($query->wheres[1]['type']));
 
         $this->assertEquals(
@@ -508,6 +508,7 @@ class RequestParserTest extends TestCase
     {
         $uri = 'some_model';
         $controllerClass = MockModelController::class;
+        $tableName = 'mock_models';
         $ignoredKey = "ignored_key";
         $nameKey = "name";
         $valueKey = "value";
@@ -542,8 +543,8 @@ class RequestParserTest extends TestCase
             return $where["column"] == $ignoredKey;
         }));
 
-        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($nameKey, $valueKey) {
-            return in_array($where["column"], [$nameKey, $valueKey]);
+        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($tableName, $nameKey, $valueKey) {
+            return in_array($where["column"], [sprintf("%s.%s", $tableName, $nameKey), sprintf("%s.%s", $tableName, $valueKey)]);
         });
         $this->assertEquals(2, count($nameAndValueColumn));
     }
@@ -552,6 +553,7 @@ class RequestParserTest extends TestCase
     {
         $uri = 'some_model';
         $controllerClass = MockModelController::class;
+        $tableName = 'mock_models';
         $ignoredKey = "omnisearch";
         $notIgnoredKey = "selected_value";
         $query = new ParameterBag([
@@ -578,11 +580,11 @@ class RequestParserTest extends TestCase
 
         $query = $builder->getQuery();
 
-        $this->assertEmpty(array_filter($query->wheres, function ($where) use ($ignoredKey) {
-            return $where["column"] == $ignoredKey;
+        $this->assertEmpty(array_filter($query->wheres, function ($where) use ($tableName, $ignoredKey) {
+            return $where["column"] == sprintf("%s.%s", $tableName, $ignoredKey);
         }));
-        $this->assertNotEmpty(array_filter($query->wheres, function ($where) use ($notIgnoredKey) {
-            return $where["column"] == $notIgnoredKey;
+        $this->assertNotEmpty(array_filter($query->wheres, function ($where) use ($tableName, $notIgnoredKey) {
+            return $where["column"] == sprintf("%s.%s", $tableName, $notIgnoredKey);
         }));
     }
 
@@ -590,6 +592,7 @@ class RequestParserTest extends TestCase
     {
         $uri = 'some_model';
         $controllerClass = MockModelController::class;
+        $tableName = 'mock_models';
         $ignoredKey = "ignored_key";
         $nameKey = "name";
         $valueKey = "value";
@@ -621,8 +624,8 @@ class RequestParserTest extends TestCase
 
         $query = $builder->getQuery();
 
-        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($nameKey, $valueKey) {
-            return in_array($where["column"], [$nameKey, $valueKey]);
+        $nameAndValueColumn = array_filter($query->wheres, function ($where) use ($tableName, $nameKey, $valueKey) {
+            return in_array($where["column"], [sprintf("%s.%s", $tableName, $nameKey), sprintf("%s.%s", $tableName, $valueKey)]);
         });
         $this->assertEquals(2, count($nameAndValueColumn));
         $this->assertEmpty(array_filter($query->wheres, function ($where) use ($ignoredKey) {
