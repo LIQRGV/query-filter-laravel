@@ -87,6 +87,7 @@ class RequestParser
         $builder = $this->applyFilter($model::query(), $modelBuilderStruct->filters);
         $builder = $this->applySorter($builder, $modelBuilderStruct->sorter);
         $builder = $this->applyPaginator($builder, $modelBuilderStruct->paginator);
+        $builder = $this->applyInclude($builder, $modelBuilderStruct->include);
 
         return $builder;
     }
@@ -98,13 +99,21 @@ class RequestParser
         $sortQuery = $queryParam->get('sort') ?? null;
         $limitQuery = $queryParam->get('limit') ?? null;
         $offsetQuery = $queryParam->get('offset') ?? 0;
+        $includeQuery = $queryParam->get('include') ?? null;
 
         $baseModelName = $this->getBaseModelName($request);
         $filters = $this->parseFilter($filterQuery);
         $sorter = $this->parseSorter($sortQuery);
         $paginator = $this->parsePaginator($limitQuery, $offsetQuery);
+        $include = $this->parseInclude($includeQuery);
 
-        return new ModelBuilderStruct($baseModelName, $filters, $sorter, $paginator);
+        $modelBuilder = new ModelBuilderStruct($baseModelName);
+        $modelBuilder->setFilters($filters);
+        $modelBuilder->setSorter($sorter);
+        $modelBuilder->setPaginator($paginator);
+        $modelBuilder->setInclude($include);
+
+        return $modelBuilder;
     }
 
     private function getBaseModelName(Request $request): string
@@ -181,7 +190,7 @@ class RequestParser
 
     private function parseSorter(?string $sortQuery): ?array
     {
-        if(is_null($sortQuery)) {
+        if (is_null($sortQuery)) {
             return [];
         }
 
@@ -191,7 +200,7 @@ class RequestParser
         $splitedSortQuery = explode(",", $sortQuery);
 
         foreach ($splitedSortQuery as $singleSortQuery) {
-            if(preg_match($fieldPattern, $singleSortQuery, $match)) {
+            if (preg_match($fieldPattern, $singleSortQuery, $match)) {
                 $fieldName = $match[1];
                 $direction = $singleSortQuery[0] == "-" ? "DESC" : "ASC";
 
@@ -202,11 +211,21 @@ class RequestParser
         return $sortStructs;
     }
 
-    private function parsePaginator($limitQuery, $offsetQuery){
+    private function parsePaginator($limitQuery, $offsetQuery)
+    {
         return [
             "limit" => $limitQuery,
             "offset" => $offsetQuery
         ];
+    }
+
+    private function parseInclude(?string $includeQuery)
+    {
+        if (empty($includeQuery)) {
+            return [];
+        }
+
+        return explode(",", $includeQuery);
     }
 
     private function getModelFromNamespaces(string $modelName, array $modelNamespaces)
@@ -236,7 +255,7 @@ class RequestParser
 
     private function applySorter(Builder $builder, array $sorter)
     {
-        if(empty($sorter)) {
+        if (empty($sorter)) {
             return $builder;
         }
 
@@ -249,10 +268,15 @@ class RequestParser
 
     private function applyPaginator(Builder $builder, array $paginator): Builder
     {
-        if ($paginator['limit']){
+        if ($paginator['limit']) {
             return $builder->limit($paginator['limit'])->offset($paginator['offset']);
         }
         return $builder;
+    }
+
+    private function applyInclude(Builder $builder, array $include): Builder
+    {
+        return $builder->with($include);
     }
 
     private function createModel(string $baseModelName)
