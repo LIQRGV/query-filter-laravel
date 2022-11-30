@@ -1,11 +1,9 @@
 <?php
 
-namespace Tests\LIQRGV\QueryFilter;
+namespace LIQRGV\QueryFilter;
 
-use Illuminate\Database\Query\Builder;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
 use LIQRGV\QueryFilter\Mocks\RelationMocks\MockModelWithRelationOne;
-use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class RequestParserIncludeEagerLoadTest extends TestCase

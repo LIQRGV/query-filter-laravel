@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\LIQRGV\QueryFilter;
+namespace LIQRGV\QueryFilter;
 
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as Capsule;

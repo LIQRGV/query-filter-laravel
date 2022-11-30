@@ -21,7 +21,10 @@
   },
   "autoload": {
     "psr-4": {
-      "LIQRGV\\QueryFilter\\": "src/"
+      "LIQRGV\\QueryFilter\\": [
+        "src/",
+        "tests/"
+      ]
     }
   },
   "autoload-dev": {

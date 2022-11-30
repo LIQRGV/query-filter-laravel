@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\LIQRGV\QueryFilter;
+namespace LIQRGV\QueryFilter;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -10,9 +10,7 @@ use LIQRGV\QueryFilter\Exception\NotModelException;
 use LIQRGV\QueryFilter\Mocks\MockClosureModel;
 use LIQRGV\QueryFilter\Mocks\MockModel;
 use LIQRGV\QueryFilter\Mocks\MockModelController;
-use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use function foo\func;
 
 class RequestParserTest extends TestCase
 {

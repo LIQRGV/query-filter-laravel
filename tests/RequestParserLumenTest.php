@@ -1,11 +1,8 @@
 <?php
 
-namespace Tests\LIQRGV\QueryFilter;
+namespace LIQRGV\QueryFilter;
 
-use LIQRGV\QueryFilter\Mocks\MockLumenModel;
 use LIQRGV\QueryFilter\Mocks\MockLumenModelController;
-use LIQRGV\QueryFilter\Mocks\MockModelController;
-use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class RequestParserLumenTest extends TestCase

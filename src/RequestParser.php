@@ -53,7 +53,7 @@ class RequestParser
     public function __construct(Request $request)
     {
         $requestParserConfig = Config::get('request_parser');
-        if (is_null($requestParserConfig) || empty($requestParserConfig)) {
+        if (empty($requestParserConfig)) {
             $this->modelNamespaces = ["App\\Models"];
         } else {
             $this->modelNamespaces = $requestParserConfig['model_namespaces'];

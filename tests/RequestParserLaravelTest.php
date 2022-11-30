@@ -1,9 +1,8 @@
 <?php
 
-namespace Tests\LIQRGV\QueryFilter;
+namespace LIQRGV\QueryFilter;
 
 use LIQRGV\QueryFilter\Mocks\MockModelController;
-use LIQRGV\QueryFilter\RequestParser;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class RequestParserLaravelTest extends TestCase
